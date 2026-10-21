@@ -49,13 +49,21 @@ def verdict(mesure, nominal=NOMINAL, tolerance=TOLERANCE):
     else:
         return "rebut"
 
+
 # --- Étape 3 : analyser une ligne -----------------------------------------------------------------
 def analyser_ligne(ligne: str, *, nominal: float = NOMINAL, tolerance: float = TOLERANCE) -> tuple[str, float, str]:
     """Analyse une ligne "AXE-0042 ; 25,03 mm" et renvoie (code, mesure, verdict).
 
     Lève ValueError si la ligne n'a pas deux champs, si le code ou la mesure est invalide.
     """
-    raise NotImplementedError("à compléter")
+    morceaux = ligne.split(";")
+    if len(morceaux) != 2:
+        raise ValueError(f"2 champs attendus, {len(morceaux)} trouvé(s)")
+    code = morceaux[0].strip().upper()
+    if not valider_code(code):
+        raise ValueError(f"code invalide : {code!r}")
+    mesure = lire_mesure(morceaux[1])
+    return code, mesure, verdict(mesure, nominal, tolerance)
 
 
 # --- Étape 4 : analyser un lot --------------------------------------------------------------------
