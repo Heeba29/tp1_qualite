@@ -136,7 +136,35 @@ def capabilite(mesures: list[float], *, nominal: float = NOMINAL, tolerance: flo
 # --- Étape 6 : le rapport -------------------------------------------------------------------------
 def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = TOLERANCE) -> str:
     """Construit le rapport de contrôle d'un lot, sous forme d'une seule chaîne (une ligne par pièce)."""
-    raise NotImplementedError("à compléter")
+    resultats, erreurs = analyser_lot(lignes, nominal=nominal, tolerance=tolerance)
+    sortie = [
+        f"Contrôle des axes : {nominal:.2f} ± {tolerance:.2f} mm",
+        f"{'Code':<10}{'Mesure':>8}{'Écart':>9}   Verdict",
+    ]
+    for code, mesure, v in resultats:
+        e = ecart(mesure, nominal)
+        sortie.append(f"{code:<10}{mesure:>8.3f}{e:>+9.3f}   {v}")
+
+    conformes, a_reprendre, rebuts = compter_verdicts(resultats)
+    n = len(resultats)
+    taux = conformes / n if n else 0
+    sortie.append(
+        f"Pièces : {n} | conformes : {conformes} ({taux:.1%}) "
+        f"| à reprendre : {a_reprendre} | rebuts : {rebuts}"
+    )
+
+    if n >= 2:
+        cp, cpk = capabilite([m for _, m, _ in resultats],
+                             nominal=nominal, tolerance=tolerance)
+        conclusion = "procédé capable" if cpk >= 1.33 else "procédé NON capable"
+        sortie.append(f"Cp = {cp:.2f} | Cpk = {cpk:.2f} -> {conclusion}")
+
+    if erreurs:
+        sortie.append(f"Lignes rejetées : {len(erreurs)}")
+        for message in erreurs:
+            sortie.append(f"  {message}")
+
+    return "\n".join(sortie)
 
 
 # --- Étape 8 (à la maison) : histogramme ----------------------------------------------------------
