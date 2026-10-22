@@ -173,4 +173,10 @@ def histogramme(mesures: list[float], *, debut: float, pas: float, nb_classes: i
 
     Les mesures hors de [debut, debut + nb_classes * pas[ sont ignorées.
     """
-    raise NotImplementedError("à compléter")
+    sortie = []
+    for i in range(nb_classes):
+        bas = round(debut + i * pas, 3)
+        haut = round(debut + (i + 1) * pas, 3)
+        nb = sum(1 for m in mesures if bas <= round(m, 3) < haut)
+        sortie.append(f"[{bas:.3f} ; {haut:.3f}[ " + "*" * nb)
+    return "\n".join(sortie)
